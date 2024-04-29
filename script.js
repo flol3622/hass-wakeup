@@ -25,85 +25,126 @@ times.forEach((time, index) => {
 // Update the innerHTML once after the loop
 clockFace.innerHTML = allHoursHtml;
 
+// *** canvas ***
+function drawRange(start, end) {
+  // clear the canvas
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  const x = ctx.canvas.width;
+
+  ctx.beginPath();
+  ctx.arc(x / 2, x / 2, x / 2, start, end);
+  const endX = x / 2 + (x / 2 - t) * Math.cos(end);
+  const endY = x / 2 + (x / 2 - t) * Math.sin(end);
+  ctx.lineTo(endX, endY);
+  ctx.arc(x / 2, x / 2, x / 2 - t, end, start, true);
+  ctx.fillStyle = "green";
+  ctx.fill();
+
+  // place handles at end points
+  const startCx = x / 2 + (x / 2 - t / 2) * Math.cos(start);
+  const startCy = x / 2 + (x / 2 - t / 2) * Math.sin(start);
+  const endCx = x / 2 + (x / 2 - t / 2) * Math.cos(end);
+  const endCy = x / 2 + (x / 2 - t / 2) * Math.sin(end);
+
+  const clockHand = document.getElementById("clock-hand1");
+  clockHand.style.left = `${startCx}px`;
+  clockHand.style.top = `${startCy}px`;
+
+  const clockHand2 = document.getElementById("clock-hand2");
+  clockHand2.style.left = `${endCx}px`;
+  clockHand2.style.top = `${endCy}px`;
+}
+
+const start = 1;
+const end = 1.2 * Math.PI;
+const t = 25;
 
 const canvas = document.getElementById("clock-canvas");
 const ctx = canvas.getContext("2d");
-const x = canvas.width;
-let start = 1;
-let end = 1.2 * Math.PI;
-const t = 25;
-let dragging = false;
-let dragTarget = null;
 
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+drawRange(start, end);
 
-    ctx.beginPath();
-    ctx.arc(x / 2, x / 2, x / 2, start, end);
-    const endX = x / 2 + (x / 2 - t) * Math.cos(end);
-    const endY = x / 2 + (x / 2 - t) * Math.sin(end);
-    ctx.lineTo(endX, endY);
-    ctx.arc(x / 2, x / 2, x / 2 - t, end, start, true);
-    ctx.fillStyle = "green";
-    ctx.fill();
-
-    // draw circles at end points
-    const startCx = x / 2 + (x / 2 - t / 2) * Math.cos(start);
-    const startCy = x / 2 + (x / 2 - t / 2) * Math.sin(start);
-    const endCx = x / 2 + (x / 2 - t / 2) * Math.cos(end);
-    const endCy = x / 2 + (x / 2 - t / 2) * Math.sin(end);
-
-    ctx.beginPath();
-    ctx.arc(startCx, startCy, t / 2, 0, 2 * Math.PI);
-    ctx.fillStyle = "red";
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(endCx, endCy, t / 2, 0, 2 * Math.PI);
-    ctx.fillStyle = "red";
-    ctx.fill();
+// *** listen for knob rotation ***
+function getCenter() {
+  const { left, top, width, height } = canvas.getBoundingClientRect();
+  return { x: left + width / 2, y: top + height / 2 };
 }
 
-function getAngleFromPoint(pointX, pointY) {
-    const dx = pointX - x / 2;
-    const dy = pointY - x / 2;
-    return Math.atan2(dy, dx);
+function calculateAngle(e, center) {
+  const dx = e.clientX - center.x;
+  const dy = e.clientY - center.y;
+  let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+  return angle;
 }
 
-canvas.addEventListener('mousedown', function(e) {
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    const startAngle = getAngleFromPoint(startCx, startCy);
-    const endAngle = getAngleFromPoint(endCx, endCy);
+function snapAngleToNearestTen(degrees) {
+  return Math.round(degrees / 5) * 5;
+}
 
-    if (Math.hypot(startCx - mouseX, startCy - mouseY) < t / 2) {
-        dragging = true;
-        dragTarget = 'start';
-    } else if (Math.hypot(endCx - mouseX, endCy - mouseY) < t / 2) {
-        dragging = true;
-        dragTarget = 'end';
+document.addEventListener("DOMContentLoaded", function () {
+  const knob = document.getElementById("clock-hand1");
+  const angleDisplay = document.getElementById("number");
+  let isDragging = false;
+  let initialAngle = 0;
+  let startAngle = 0;
+  //   angleDisplay.textContent = `Angle: ${startAngle}°`;
+
+  knob.addEventListener("mousedown", function (e) {
+    console.log("mousedown");
+    const center = getCenter();
+    isDragging = true;
+    initialAngle = calculateAngle(e, center) - startAngle;
+    e.preventDefault();
+  });
+
+  document.addEventListener("mouseup", function () {
+    isDragging = false;
+  });
+
+  document.addEventListener("mousemove", function (e) {
+    if (isDragging) {
+      const center = getCenter(knob);
+      const currentAngle = calculateAngle(e, center);
+      const newAngle = currentAngle - initialAngle;
+      const snappedAngle = snapAngleToNearestTen(newAngle); // Snap the angle
+      startAngle = snappedAngle;
+      drawRange(start + (snappedAngle * Math.PI) / 180, end);
+      //   knob.style.transform = `rotate(${snappedAngle}deg)`;
+      //   angleDisplay.textContent = `Angle: ${snappedAngle}°`;
     }
+  });
 });
 
-canvas.addEventListener('mousemove', function(e) {
-    if (dragging) {
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-        const newAngle = getAngleFromPoint(mouseX, mouseY);
+document.addEventListener("DOMContentLoaded", function () {
+  const knob = document.getElementById("clock-hand2");
+  const angleDisplay = document.getElementById("number");
+  let isDragging = false;
+  let initialAngle = 0;
+  let startAngle = 0;
+  //   angleDisplay.textContent = `Angle: ${startAngle}°`;
 
-        if (dragTarget === 'start') {
-            start = newAngle;
-        } else if (dragTarget === 'end') {
-            end = newAngle;
-        }
-        draw();
+  knob.addEventListener("mousedown", function (e) {
+    console.log("mousedown");
+    const center = getCenter();
+    isDragging = true;
+    initialAngle = calculateAngle(e, center) - startAngle;
+    e.preventDefault();
+  });
+
+  document.addEventListener("mouseup", function () {
+    isDragging = false;
+  });
+
+  document.addEventListener("mousemove", function (e) {
+    if (isDragging) {
+      const center = getCenter(knob);
+      const currentAngle = calculateAngle(e, center);
+      const newAngle = currentAngle - initialAngle;
+      const snappedAngle = snapAngleToNearestTen(newAngle); // Snap the angle
+      startAngle = snappedAngle;
+      drawRange(start, end + (snappedAngle * Math.PI) / 180);
+      //   knob.style.transform = `rotate(${snappedAngle}deg)`;
+      //   angleDisplay.textContent = `Angle: ${snappedAngle}°`;
     }
+  });
 });
-
-canvas.addEventListener('mouseup', function(e) {
-    dragging = false;
-});
-
-draw();

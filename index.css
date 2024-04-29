@@ -31,6 +31,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  border: 1px solid yellow;
 }
 
 /* Styles for the inner clock */
@@ -49,20 +50,42 @@
   border: 1px solid blue;
 }
 
+.clock-handles {
+  position: absolute;
+  width: 250px;
+  height: 250px;
+  border: 2px solid black;
+}
+
 /* Inner clock */
 .clockAngleBox {
   position: absolute;
   width: min-content;
   height: 100%;
-  text-wrap: nowrap;
 }
 
 .clockAngleBox p {
   margin-top: 8px;
+  text-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .clockAngleBox span {
   font-size: 0.75rem;
+}
+
+.clockHandle {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  background-color: black;
+  transform: translate(calc(-50% + 1px), -50%);
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
 }
 
 body {
