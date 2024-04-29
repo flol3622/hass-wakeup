@@ -14,9 +14,12 @@ const times = [
 ];
 
 const clockFace = document.getElementById("inner-clock");
-const start = -120;
-const end = -70;
+const start = -30;
+const end = 20;
 const t = 25;
+
+localStorage["start"] = start;
+localStorage["end"] = end;
 
 // Build clock face HTML
 let allHoursHtml = times
@@ -32,20 +35,19 @@ clockFace.innerHTML = allHoursHtml;
 // Draw the range ring
 const clockRing = document.getElementById("clock-ring");
 function drawRange(start, end) {
-  // x is width of clockRing
   const x = clockRing.clientWidth;
-  console.log(x);
 
-  const startAngle = start + 90;
-  clockRing.style.setProperty("--ring-rotate", `${startAngle}deg`);
+  clockRing.style.setProperty("--ring-rotate", `${start}deg`);
   const endAngle = end - start;
   clockRing.style.setProperty("--ring-end", `${endAngle}deg`);
 
   // place handles at end points
-  const startCx = x / 2 + (x / 2 - t / 2) * Math.cos((start * Math.PI) / 180);
-  const startCy = x / 2 + (x / 2 - t / 2) * Math.sin((start * Math.PI) / 180);
-  const endCx = x / 2 + (x / 2 - t / 2) * Math.cos((end * Math.PI) / 180);
-  const endCy = x / 2 + (x / 2 - t / 2) * Math.sin((end * Math.PI) / 180);
+  const startT = ((start - 90) * Math.PI) / 180;
+  const endT = ((end - 90) * Math.PI) / 180;
+  const startCx = x / 2 + (x / 2 - t / 2) * Math.cos(startT);
+  const startCy = x / 2 + (x / 2 - t / 2) * Math.sin(startT);
+  const endCx = x / 2 + (x / 2 - t / 2) * Math.cos(endT);
+  const endCy = x / 2 + (x / 2 - t / 2) * Math.sin(endT);
 
   const clockHand = document.getElementById("clock-hand-start");
   clockHand.style.left = `${startCx}px`;
@@ -72,7 +74,8 @@ function calculateAngle(e, center) {
 
 function snapAngleToNearestTen(degrees) {
   const angle = Math.round(degrees / 5) * 5;
-  return ((angle % 360) + 360) % 360;
+  // return ((angle % 360) + 360) % 360;
+  return angle;
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -80,27 +83,20 @@ document.addEventListener("DOMContentLoaded", function () {
   const knob2 = document.getElementById("clock-hand-end");
   const hour1 = document.getElementById("hour-start");
   const hour2 = document.getElementById("hour-end");
-
   let isDragging1 = false;
   let isDragging2 = false;
-  let initialAngle1 = start + 90;
-  let initialAngle2 = end + 90;
-  let startAngle1 = start + 90;
-  let startAngle2 = end + 90;
+  let startAngle1 = localStorage["start"];
+  let startAngle2 = localStorage["end"];
   hour1.textContent = `Angle: ${startAngle1}°`;
   hour2.textContent = `Angle: ${startAngle2}°`;
 
   knob1.addEventListener("mousedown", function (e) {
-    const center = getCenter();
     isDragging1 = true;
-    initialAngle1 = calculateAngle(e, center) - startAngle1;
     e.preventDefault();
   });
 
   knob2.addEventListener("mousedown", function (e) {
-    const center = getCenter();
     isDragging2 = true;
-    initialAngle2 = calculateAngle(e, center) - startAngle2;
     e.preventDefault();
   });
 
@@ -113,18 +109,16 @@ document.addEventListener("DOMContentLoaded", function () {
     if (isDragging1) {
       const center = getCenter(knob1);
       const currentAngle = calculateAngle(e, center);
-      const newAngle = currentAngle - initialAngle1;
-      const snappedAngle = snapAngleToNearestTen(newAngle); // Snap the angle
-      startAngle1 = snappedAngle;
-      drawRange(start + snappedAngle, end);
+      const newAngle = currentAngle+90
+      const snappedAngle = snapAngleToNearestTen(newAngle);
+      drawRange(snappedAngle, end);
       hour1.textContent = `Angle: ${snappedAngle}°`;
     } else if (isDragging2) {
       const center = getCenter(knob2);
       const currentAngle = calculateAngle(e, center);
-      const newAngle = currentAngle - initialAngle2;
-      const snappedAngle = snapAngleToNearestTen(newAngle); // Snap the angle
-      startAngle2 = snappedAngle;
-      drawRange(start, end + snappedAngle);
+      const newAngle = currentAngle+90
+      const snappedAngle = snapAngleToNearestTen(newAngle);
+      drawRange(start, snappedAngle);
       hour2.textContent = `Angle: ${snappedAngle}°`;
     }
   });
