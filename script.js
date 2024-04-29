@@ -37,15 +37,12 @@ function drawRange(start, end) {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   const x = ctx.canvas.width;
 
-  ctx.beginPath();
-  ctx.arc(x / 2, x / 2, x / 2, start, end);
-  const endX = x / 2 + (x / 2 - t) * Math.cos(end);
-  const endY = x / 2 + (x / 2 - t) * Math.sin(end);
-  ctx.lineTo(endX, endY);
-  ctx.arc(x / 2, x / 2, x / 2 - t, end, start, true);
-  ctx.closePath();
-  ctx.fillStyle = "green";
-  ctx.fill();
+  // change css variable of #clock-ring to start and end angles
+  const clockRing = document.getElementById("clock-ring");
+  const startAngle = start + Math.PI / 2;
+  clockRing.style.setProperty("--ring-rotate", `${startAngle}rad`);
+  const endAngle = end - start;
+  clockRing.style.setProperty("--ring-end", `${endAngle}rad`);
 
   // place handles at end points
   const startCx = x / 2 + (x / 2 - t / 2) * Math.cos(start);
@@ -89,7 +86,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const knob2 = document.getElementById("clock-hand-end");
   const hour1 = document.getElementById("hour-start");
   const hour2 = document.getElementById("hour-end");
-  const canvas = document.getElementById("clock-canvas");
 
   let isDragging1 = false;
   let isDragging2 = false;

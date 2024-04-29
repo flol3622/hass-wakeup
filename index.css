@@ -37,11 +37,11 @@
 /* Styles for the inner clock */
 #inner-clock {
   aspect-ratio: 1/1;
-  border: 1px solid green;
   border-radius: 50%;
   position: relative;
   display: flex;
   justify-content: center;
+  background-color: white;
 }
 
 /* Clock canvas (handles)*/
@@ -49,9 +49,22 @@
   width: 250px;
   border: 3px solid blue;
   cursor: pointer;
-  background-color: rgba(0, 0, 0, 0.158);
   z-index: 10;
+}
 
+#clock-ring {
+  --ring-rotate: 0deg;
+  --ring-end: 50deg;
+  position: absolute;
+  width: 250px;
+  height: 250px;
+  border: 2px solid black;
+  background: conic-gradient(
+    red 0 var(--ring-end),
+    transparent var(--ring-end) 360deg
+  );
+  border-radius: 50%;
+  transform: rotate(var(--ring-rotate));
 }
 
 .clock-handles {
