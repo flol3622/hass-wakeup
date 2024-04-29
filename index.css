@@ -47,7 +47,11 @@
 /* Clock canvas (handles)*/
 #clock-canvas {
   width: 250px;
-  border: 1px solid blue;
+  border: 3px solid blue;
+  cursor: pointer;
+  background-color: rgba(0, 0, 0, 0.158);
+  z-index: 10;
+
 }
 
 .clock-handles {
@@ -79,13 +83,14 @@
   width: 25px;
   height: 25px;
   background-color: black;
-  transform: translate(calc(-50% + 1px), -50%);
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   color: white;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  z-index: 20;
 }
 
 body {
