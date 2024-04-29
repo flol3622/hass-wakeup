@@ -1,0 +1,70 @@
+/* Styles for outer box */
+.outer-box {
+  border: 1px solid black;
+  width: 300px;
+  height: 300px;
+  margin: 2.5rem auto 0;
+}
+
+/* Styles for the time display box */
+.time-box {
+  display: flex;
+  justify-content: space-between;
+  width: fit-content;
+  border: 1px solid black;
+  margin: 1.5rem auto 0;
+  gap: 1.5rem;
+}
+
+/* Styles for the inner clock container */
+.clock {
+  border: 1px solid red;
+  margin-top: 1.5rem;
+  position: relative;
+  aspect-ratio: 1/1;
+}
+
+.clock-layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Styles for the inner clock */
+#inner-clock {
+  aspect-ratio: 1/1;
+  border: 1px solid green;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+/* Clock canvas (handles)*/
+#clock-canvas {
+  width: 250px;
+  border: 1px solid blue;
+}
+
+/* Inner clock */
+.clockAngleBox {
+  position: absolute;
+  width: min-content;
+  height: 100%;
+  text-wrap: nowrap;
+}
+
+.clockAngleBox p {
+  margin-top: 8px;
+}
+
+.clockAngleBox span {
+  font-size: 0.75rem;
+}
+
+body {
+  font-family: Arial, sans-serif;
+}
