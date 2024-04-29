@@ -61,7 +61,7 @@
   border: 2px solid black;
   background: conic-gradient(
     red 0 var(--ring-end),
-    transparent var(--ring-end) 360deg
+    rgb(218, 218, 218) var(--ring-end) 360deg
   );
   border-radius: 50%;
   transform: rotate(var(--ring-rotate));

@@ -13,11 +13,9 @@ const times = [
   "10",
 ];
 
-const canvas = document.getElementById("clock-canvas");
-const ctx = canvas.getContext("2d");
 const clockFace = document.getElementById("inner-clock");
-const start = 1;
-const end = 1.2 * Math.PI;
+const start = -120;
+const end = -70;
 const t = 25;
 
 // Build clock face HTML
@@ -31,24 +29,23 @@ let allHoursHtml = times
   .join("");
 clockFace.innerHTML = allHoursHtml;
 
-// Draw the range on the canvas
+// Draw the range ring
+const clockRing = document.getElementById("clock-ring");
 function drawRange(start, end) {
-  // clear the canvas
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  const x = ctx.canvas.width;
+  // x is width of clockRing
+  const x = clockRing.clientWidth;
+  console.log(x);
 
-  // change css variable of #clock-ring to start and end angles
-  const clockRing = document.getElementById("clock-ring");
-  const startAngle = start + Math.PI / 2;
-  clockRing.style.setProperty("--ring-rotate", `${startAngle}rad`);
+  const startAngle = start + 90;
+  clockRing.style.setProperty("--ring-rotate", `${startAngle}deg`);
   const endAngle = end - start;
-  clockRing.style.setProperty("--ring-end", `${endAngle}rad`);
+  clockRing.style.setProperty("--ring-end", `${endAngle}deg`);
 
   // place handles at end points
-  const startCx = x / 2 + (x / 2 - t / 2) * Math.cos(start);
-  const startCy = x / 2 + (x / 2 - t / 2) * Math.sin(start);
-  const endCx = x / 2 + (x / 2 - t / 2) * Math.cos(end);
-  const endCy = x / 2 + (x / 2 - t / 2) * Math.sin(end);
+  const startCx = x / 2 + (x / 2 - t / 2) * Math.cos((start * Math.PI) / 180);
+  const startCy = x / 2 + (x / 2 - t / 2) * Math.sin((start * Math.PI) / 180);
+  const endCx = x / 2 + (x / 2 - t / 2) * Math.cos((end * Math.PI) / 180);
+  const endCy = x / 2 + (x / 2 - t / 2) * Math.sin((end * Math.PI) / 180);
 
   const clockHand = document.getElementById("clock-hand-start");
   clockHand.style.left = `${startCx}px`;
@@ -62,7 +59,7 @@ drawRange(start, end);
 
 // *** listen for knob rotation ***
 function getCenter() {
-  const { left, top, width, height } = canvas.getBoundingClientRect();
+  const { left, top, width, height } = clockRing.getBoundingClientRect();
   return { x: left + width / 2, y: top + height / 2 };
 }
 
@@ -74,12 +71,9 @@ function calculateAngle(e, center) {
 }
 
 function snapAngleToNearestTen(degrees) {
-  return Math.round(degrees / 5) * 5;
+  const angle = Math.round(degrees / 5) * 5;
+  return ((angle % 360) + 360) % 360;
 }
-
-canvas.addEventListener("click", () => {
-  console.log("click");
-});
 
 document.addEventListener("DOMContentLoaded", function () {
   const knob1 = document.getElementById("clock-hand-start");
@@ -89,22 +83,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let isDragging1 = false;
   let isDragging2 = false;
-  let initialAngle = 0;
-  let startAngle = 0;
-  hour1.textContent = `Angle: ${startAngle}°`;
-  hour2.textContent = `Angle: ${startAngle}°`;
+  let initialAngle1 = start + 90;
+  let initialAngle2 = end + 90;
+  let startAngle1 = start + 90;
+  let startAngle2 = end + 90;
+  hour1.textContent = `Angle: ${startAngle1}°`;
+  hour2.textContent = `Angle: ${startAngle2}°`;
 
   knob1.addEventListener("mousedown", function (e) {
     const center = getCenter();
     isDragging1 = true;
-    initialAngle = calculateAngle(e, center) - startAngle;
+    initialAngle1 = calculateAngle(e, center) - startAngle1;
     e.preventDefault();
   });
 
   knob2.addEventListener("mousedown", function (e) {
     const center = getCenter();
     isDragging2 = true;
-    initialAngle = calculateAngle(e, center) - startAngle;
+    initialAngle2 = calculateAngle(e, center) - startAngle2;
     e.preventDefault();
   });
 
@@ -117,18 +113,18 @@ document.addEventListener("DOMContentLoaded", function () {
     if (isDragging1) {
       const center = getCenter(knob1);
       const currentAngle = calculateAngle(e, center);
-      const newAngle = currentAngle - initialAngle;
+      const newAngle = currentAngle - initialAngle1;
       const snappedAngle = snapAngleToNearestTen(newAngle); // Snap the angle
-      startAngle = snappedAngle;
-      drawRange(start + (snappedAngle * Math.PI) / 180, end);
+      startAngle1 = snappedAngle;
+      drawRange(start + snappedAngle, end);
       hour1.textContent = `Angle: ${snappedAngle}°`;
     } else if (isDragging2) {
       const center = getCenter(knob2);
       const currentAngle = calculateAngle(e, center);
-      const newAngle = currentAngle - initialAngle;
+      const newAngle = currentAngle - initialAngle2;
       const snappedAngle = snapAngleToNearestTen(newAngle); // Snap the angle
-      startAngle = snappedAngle;
-      drawRange(start, end + (snappedAngle * Math.PI) / 180);
+      startAngle2 = snappedAngle;
+      drawRange(start, end + snappedAngle);
       hour2.textContent = `Angle: ${snappedAngle}°`;
     }
   });
