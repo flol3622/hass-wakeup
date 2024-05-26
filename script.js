@@ -37,6 +37,16 @@ const clockRing = document.getElementById("clock-ring");
 function drawRange(start, end) {
   const x = clockRing.clientWidth;
 
+  // keep start before end
+  if (start > end) {
+    start = start - 360;
+  }
+
+  // keep min and max range
+  if (end - start < 20 || end - start > 340) {
+    return false;
+  }
+
   clockRing.style.setProperty("--ring-rotate", `${start}deg`);
   const endAngle = end - start;
   clockRing.style.setProperty("--ring-end", `${endAngle}deg`);
@@ -56,6 +66,8 @@ function drawRange(start, end) {
   const clockHand2 = document.getElementById("clock-hand-end");
   clockHand2.style.left = `${endCx}px`;
   clockHand2.style.top = `${endCy}px`;
+
+  return true;
 }
 drawRange(start, end);
 
@@ -73,9 +85,19 @@ function calculateAngle(e, center) {
 }
 
 function snapAngleToNearestTen(degrees) {
-  const angle = Math.round(degrees / 5) * 5;
-  // return ((angle % 360) + 360) % 360;
+  const tick = 5 * 3/4;
+  const angle = Math.round(degrees / tick) * tick;
   return angle;
+}
+
+function angleToHour(angle) {
+  // set between 0 and 360
+  angle = ((angle % 360) + 360) % 360;
+  angle = angle*2;
+  const hour = Math.floor(angle / 30);
+  const minutes = Math.floor((angle % 30) * 2);
+
+  return `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -87,8 +109,8 @@ document.addEventListener("DOMContentLoaded", function () {
   let isDragging2 = false;
   let startAngle1 = localStorage["start"];
   let startAngle2 = localStorage["end"];
-  hour1.textContent = `Angle: ${startAngle1}°`;
-  hour2.textContent = `Angle: ${startAngle2}°`;
+  hour1.textContent = angleToHour(startAngle1);
+  hour2.textContent = angleToHour(startAngle2);
 
   knob1.addEventListener("mousedown", function (e) {
     isDragging1 = true;
@@ -109,17 +131,23 @@ document.addEventListener("DOMContentLoaded", function () {
     if (isDragging1) {
       const center = getCenter(knob1);
       const currentAngle = calculateAngle(e, center);
-      const newAngle = currentAngle+90
+      const newAngle = currentAngle + 90;
       const snappedAngle = snapAngleToNearestTen(newAngle);
-      drawRange(snappedAngle, end);
-      hour1.textContent = `Angle: ${snappedAngle}°`;
+      const storedEnd = localStorage["end"];
+      if (drawRange(snappedAngle, storedEnd)) {
+        hour1.textContent = angleToHour(snappedAngle);
+        localStorage["start"] = snappedAngle;
+      }
     } else if (isDragging2) {
       const center = getCenter(knob2);
       const currentAngle = calculateAngle(e, center);
-      const newAngle = currentAngle+90
+      const newAngle = currentAngle + 90;
       const snappedAngle = snapAngleToNearestTen(newAngle);
-      drawRange(start, snappedAngle);
-      hour2.textContent = `Angle: ${snappedAngle}°`;
+      const storedStart = localStorage["start"];
+      if (drawRange(storedStart, snappedAngle)) {
+        hour2.textContent = angleToHour(snappedAngle);
+        localStorage["end"] = snappedAngle;
+      }
     }
   });
 });
